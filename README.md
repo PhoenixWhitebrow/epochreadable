@@ -1,6 +1,6 @@
 ### epochreadable
 
-This plugin provides a simple way of converting an epoch millisecond time into UTC and localtime
+This plugin provides a simple way of converting an epoch millisecond or second time into UTC and localtime
 It allows for copying the result into the clipboard
 
 

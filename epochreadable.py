@@ -20,11 +20,19 @@ class Runner(dbus.service.Object):
     @dbus.service.method(iface, in_signature='s', out_signature='a(sssida{sv})')
     def Match(self, query: str):
         """This method is used to get the matches and it returns a list of tupels"""
-        if query.isdigit():
+        if re.match(r"^\d{13}$", query) and query.isdigit():
             parsedZTime = datetime.fromtimestamp(int(query) / 1000.0, timezone.utc);
             zTime = parsedZTime.isoformat(timespec='milliseconds')
             asLocalTime = parsedZTime.astimezone()
             localTime = asLocalTime.isoformat(timespec='milliseconds')
+            localTz = asLocalTime.tzname()
+            # data, text, icon, type (Plasma::QueryType), relevance (0-1), properties (subtext, category and urls)
+            return [(zTime, zTime, "clock", 100, 1.0, {'subtext': 'UTC'}), (localTime, localTime, "clock", 100, 1.0, {'subtext': localTz})]
+        elif re.match(r"^\d{10}$", query) and query.isdigit():
+            parsedZTime = datetime.fromtimestamp(int(query), timezone.utc);
+            zTime = parsedZTime.isoformat(timespec='seconds')
+            asLocalTime = parsedZTime.astimezone()
+            localTime = asLocalTime.isoformat(timespec='seconds')
             localTz = asLocalTime.tzname()
             # data, text, icon, type (Plasma::QueryType), relevance (0-1), properties (subtext, category and urls)
             return [(zTime, zTime, "clock", 100, 1.0, {'subtext': 'UTC'}), (localTime, localTime, "clock", 100, 1.0, {'subtext': localTz})]
@@ -33,7 +41,7 @@ class Runner(dbus.service.Object):
     @dbus.service.method(iface, out_signature='a(sss)')
     def Actions(self):
         # id, text, icon
-        return [("epochreadable", "Convert Epoch Millis to UTC and local", "clock")]
+        return [("epochreadable", "Convert Epoch Millis or Seconds to UTC and local", "clock")]
 
     @dbus.service.method(iface, in_signature='ss')
     def Run(self, data: str, action_id: str):
